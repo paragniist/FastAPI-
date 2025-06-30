@@ -1,0 +1,98 @@
+from fastapi import FastAPI,Path,Query,HTTPException
+from pydantic import BaseModel,Field
+from typing import Optional
+from starlette import status
+
+BOOKS=[
+    {'id':1,'title':'COMPUTER NETWORKS','author':'Author 1','description':'Good book','rating':5,'published_date':2001},
+    {'id':2,'title':'OPERATING SYSTEM','author':'Author 2','description':'Helpful and interesting','rating':4,'published_date':2023},
+    {'id':3,'title':'MICROPROCESSOR','author':'Author 3','description':'great content','rating':2,'published_date':2000},
+    {'id':4,'title':'PYTHON','author':'Author 4','description':'very good content','rating':5,'published_date':2012},
+    {'id':5,'title':'WEB DEV','author':'Author 5','description':'Not clear explaination','rating':1,'published_date':2003},
+    {'id':6,'title':'DATA STRUCTURES','author':'Author 6','description':'all the lessons are not properly explained','rating':3,'published_date':2016}
+]
+
+app =FastAPI()
+class Books:
+    id:int
+    title:str
+    author:str
+    description:str
+    rating:int
+    published_date:int
+
+    def __init__(self,id,title,author,description,rating,published_date):
+        self.id=id
+        self.title=title
+        self.author=author
+        self.description=description
+        self.rating=rating
+        self.published_date=published_date
+
+class Book_request(BaseModel):
+    id:Optional[int] = Field(description='ID is not necessary')
+    title:str = Field(min_length=3)
+    author:str = Field(min_length=1)
+    description:str = Field(min_length=5)
+    rating:int = Field(gt=0,lt=6)
+    published_date:int = Field(gt=1999,lt=2035)
+
+    model_config={
+        'json_schema_extra':{
+            "example":{
+                "title":"Computer science python book",
+                "author":"Coding Author",
+                "description":"It is a very knowledgable book",
+                "rating":5,
+                "published_date":2025
+            }
+        }
+    }
+
+
+@app.get("/books")
+async def read_all_book():
+    return BOOKS;
+
+@app.get("/books/{book_id}")
+async def read_by_id(book_id:int=Path(gt=0)):
+    for book in BOOKS:
+        if book.id==book_id:
+           return book
+    raise HTTPException(status_code=404,details='Item not found')
+        
+@app.get("/books/")
+async def read_by_ratings(book_rating:str=Query(gt=0,lt=6)):
+    book_to_read=[]
+    for book in BOOKS:
+        if book.rating==book_rating:
+            book_to_read.append(book)
+    return book_to_read
+
+@app.post("/books/create_book",status_code=status.HTTP_201_CREATED)
+async def create_book(book_request: Book_request):
+    new_book = Books(**book_request.model_dump())
+    BOOKS.append(find_id(new_book))
+
+def find_id(book:Books):
+    book.id = 1 if len(BOOKS)==0 else BOOKS[-1].id+1
+
+@app.put("/books/update_book",status_code=status.HTTP_204_NO_CONTENT)
+async def updating(book:Book_request):
+    book_changed=False
+    for i in range(len(BOOKS)):
+        if BOOKS[i].id == book.id:
+           BOOKS[i] = book
+           book_changed=True
+    if not book_changed:
+        raise HTTPException(status_code=404,detail='Item not found')
+
+@app.delete("/books/deleted_books",status_code=status.HTTP_204_NO_CONTENT)
+async def deleting_book(book_id:int):
+    book_changed=False
+    for i in range(len(BOOKS)):
+        if BOOKS[i].id==book_id:
+            BOOKS.pop(i)
+            book_changed=True
+    if not book_changed:
+        raise HTTPException(status_code=404,details='Ite ot found')
