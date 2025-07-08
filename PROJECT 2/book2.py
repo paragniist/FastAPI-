@@ -3,15 +3,6 @@ from pydantic import BaseModel,Field
 from typing import Optional
 from starlette import status
 
-BOOKS=[
-    {'id':1,'title':'COMPUTER NETWORKS','author':'Author 1','description':'Good book','rating':5,'published_date':2001},
-    {'id':2,'title':'OPERATING SYSTEM','author':'Author 2','description':'Helpful and interesting','rating':4,'published_date':2023},
-    {'id':3,'title':'MICROPROCESSOR','author':'Author 3','description':'great content','rating':2,'published_date':2000},
-    {'id':4,'title':'PYTHON','author':'Author 4','description':'very good content','rating':5,'published_date':2012},
-    {'id':5,'title':'WEB DEV','author':'Author 5','description':'Not clear explaination','rating':1,'published_date':2003},
-    {'id':6,'title':'DATA STRUCTURES','author':'Author 6','description':'all the lessons are not properly explained','rating':3,'published_date':2016}
-]
-
 app =FastAPI()
 class Books:
     id:int
@@ -28,6 +19,16 @@ class Books:
         self.description=description
         self.rating=rating
         self.published_date=published_date
+        
+BOOKS = [
+    Books(1, 'Computer Science Pro', 'Author 5', 'A very nice book!', 5, 2030),
+    Books(2, 'Be Fast with FastAPI', 'Author 6', 'A great book!', 5, 2030),
+    Books(3, 'Master Endpoints', 'Author 7', 'A awesome book!', 5, 2029),
+    Books(4, 'Gen AI-1', 'Author 1', 'Book Description', 2, 2028),
+    Books(5, 'Gen AI-2', 'Author 2', 'Book Description', 3, 2027),
+    Books(6, 'Gen AI-3', 'Author 3', 'Book Description', 1, 2026)
+]
+
 
 class Book_request(BaseModel):
     id:Optional[int] = Field(description='ID is not necessary')
